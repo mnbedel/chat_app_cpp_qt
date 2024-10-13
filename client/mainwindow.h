@@ -28,6 +28,10 @@ private slots:
     void on_comboStatus_currentIndexChanged(int index);
     void onTyping();
 
+    void on_buttonSendFile_clicked();
+    void onRejectReceivingFile();
+    void onInitReceivingFile(QString clientName, QString fileName, qint64 fileSize);
+
 private:
     Ui::MainWindow *ui;
     ClientManager* _client;

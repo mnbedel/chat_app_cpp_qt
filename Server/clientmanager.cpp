@@ -59,8 +59,44 @@ void ClientManager::ReadyRead()
     case ChatProtocol::MessageType::IsTyping:
         emit IsTyping();
         break;
+
+    case ChatProtocol::MessageType::InitSendingFile:
+        emit InitReceivingFile(_protocol.name(), _protocol.fileName(), _protocol.fileSize());
+        break;
+
+    case ChatProtocol::MessageType::AcceptSendingFile:
+        emit SendFile();
+        break;
+
+    case ChatProtocol::MessageType::RejectSendingFile:
+        emit RejectReceivingFile();
+        break;
+
+    case ChatProtocol::MessageType::SendFile:
+        emit SaveFile();
+        break;
     default:
         break;
+    }
+}
+
+void ClientManager::SendFile()
+{
+    _socket->write(_protocol.setFileMessage(_tempFileName));
+}
+
+void ClientManager::SaveFile()
+{
+    QDir dir;
+    dir.mkdir(Name());
+    QString path = QString("%1/%2/%3_%4")
+            .arg(dir.canonicalPath(), Name(), QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"), _protocol.fileName());
+    QFile file(path);
+
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(_protocol.fileData());
+        file.close();
+        emit FileSaved(path);
     }
 }
 
@@ -76,4 +112,20 @@ QString ClientManager::Name() const
     auto name = _protocol.name().length() > 0 ? _protocol.name() : QString("Client (%1").arg(id);
 
     return name;
+}
+
+void ClientManager::sendInitSendingFile(QString fileName)
+{
+    _tempFileName = fileName;
+    _socket->write(_protocol.setInitSendingFileMessage(fileName));
+}
+
+void ClientManager::sendAcceptFile()
+{
+    _socket->write(_protocol.setAcceptFileMessage());
+}
+
+void ClientManager::sendRejectFile()
+{
+    _socket->write(_protocol.setRejectFileMessage());
 }

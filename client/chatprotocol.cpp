@@ -1,6 +1,7 @@
 #include "chatprotocol.h"
 
 #include <QDataStream>
+#include <QFileInfo>
 #include <QIODevice>
 
 ChatProtocol::ChatProtocol()
@@ -33,6 +34,43 @@ QByteArray ChatProtocol::setStatusMessage(Status status)
     return ba;
 }
 
+QByteArray ChatProtocol::setInitSendingFileMessage(QString fileName)
+{
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_6_0);
+    QFileInfo info(fileName);
+    out << MessageType::InitSendingFile << info.fileName() << info.size();
+
+    return ba;
+}
+
+QByteArray ChatProtocol::setAcceptFileMessage()
+{
+    return getData(MessageType::AcceptSendingFile, "");
+}
+
+QByteArray ChatProtocol::setRejectFileMessage()
+{
+    return getData(MessageType::RejectSendingFile, "");
+}
+
+QByteArray ChatProtocol::setFileMessage(QString fileName)
+{
+    QByteArray ba;
+    QFile file(fileName);
+
+    if (file.open(QIODevice::ReadOnly)) {
+        QDataStream out(&ba, QIODevice::WriteOnly);
+        out.setVersion(QDataStream::Qt_6_0);
+        QFileInfo info(fileName);
+        out << MessageType::SendFile << info.fileName() << info.size() << file.readAll();
+        file.close();
+    }
+
+    return ba;
+}
+
 void ChatProtocol::loadData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
@@ -52,6 +90,14 @@ void ChatProtocol::loadData(QByteArray data)
         in >> _status;
         break;
 
+    case MessageType::InitSendingFile:
+        in >> _fileName >> _fileSize;
+        break;
+
+    case MessageType::SendFile:
+        in >> _fileName >> _fileSize >> _fileData;
+        break;
+
     default:
         break;
     }
@@ -65,6 +111,21 @@ QByteArray ChatProtocol::getData(MessageType type, QString data)
     out << type << data;
 
     return ba;
+}
+
+const QByteArray &ChatProtocol::fileData() const
+{
+    return _fileData;
+}
+
+qint64 ChatProtocol::fileSize() const
+{
+    return _fileSize;
+}
+
+const QString &ChatProtocol::fileName() const
+{
+    return _fileName;
 }
 
 const QString &ChatProtocol::message() const

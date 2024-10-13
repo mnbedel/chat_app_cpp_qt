@@ -11,9 +11,14 @@ ClientChatWidget::ClientChatWidget(QTcpSocket* client, QWidget *parent) :
     QObject::connect(_client, &ClientManager::Disconnected, this, &ClientChatWidget::ClientDisconnected);
     QObject::connect(_client, &ClientManager::TextMessageReceived, this, &ClientChatWidget::TextMessageReceived);
     QObject::connect(_client, &ClientManager::IsTyping, this, &ClientChatWidget::onTyping);
-    QObject::connect(_client, &ClientManager::NameChanged, this, &ClientChatWidget::ClientNameChanged);
+    QObject::connect(_client, &ClientManager::NameChanged, this, &ClientChatWidget::onClientNameChanged);
     QObject::connect(_client, &ClientManager::StatusChanged, this, &ClientChatWidget::StatusChanged);
+    QObject::connect(_client, &ClientManager::FileSaved, this, &ClientChatWidget::onFileSaved);
+    QObject::connect(_client, &ClientManager::InitReceivingFile, this, &ClientChatWidget::onInitReceivingFile);
     QObject::connect(ui->lineMessage, &QLineEdit::textChanged, _client, &ClientManager::SendIsTyping);
+
+    _dir.mkdir(_client->Name());
+    _dir.setPath("./" + _client->Name());
 }
 
 ClientChatWidget::~ClientChatWidget()
@@ -42,5 +47,38 @@ void ClientChatWidget::TextMessageReceived(QString message)
 void ClientChatWidget::onTyping()
 {
     emit IsTyping(QString("%1 is typing").arg(_client->Name()));
+}
+
+void ClientChatWidget::onInitReceivingFile(QString clientName, QString fileName, qint64 fileSize)
+{
+    QString message = QString("Client (%1) wants to send a file. Do you want to accept it?\nFile Name:%2\nFile Size: %3 bytes")
+            .arg(clientName, fileName)
+            .arg(fileSize);
+
+    QMessageBox::StandardButton result = QMessageBox::question(this, "Receiving File", message);
+
+    if (result == QMessageBox::Yes) {
+        _client->sendAcceptFile();
+    }
+    else {
+        _client->sendRejectFile();
+    }
+}
+
+void ClientChatWidget::onFileSaved(QString path)
+{
+    QString message = QString("File saved here:\n%1").arg(path);
+    QMessageBox::information(this, "File saved", message);
+}
+
+void ClientChatWidget::on_labelOpenFolder_linkActivated(const QString &link)
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile(_client->Name()));
+}
+
+void ClientChatWidget::onClientNameChanged(QString name)
+{
+    QFile::rename(_dir.canonicalPath(), name);
+    emit ClientNameChanged(name);
 }
 

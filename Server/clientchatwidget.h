@@ -4,6 +4,8 @@
 #include "clientmanager.h"
 
 #include <QWidget>
+#include <QMessageBox>
+#include <QDesktopServices>
 #include <QTcpSocket>
 
 namespace Ui {
@@ -24,6 +26,12 @@ private slots:
     void TextMessageReceived(QString message);
     void onTyping();
 
+    void onInitReceivingFile(QString clientName, QString fileName, qint64 fileSize);
+    void onFileSaved(QString path);
+    void on_labelOpenFolder_linkActivated(const QString &link);
+
+    void onClientNameChanged(QString name);
+
 signals:
     void ClientNameChanged(QString name);
     void IsTyping(QString message);
@@ -32,6 +40,7 @@ signals:
 private:
     Ui::ClientChatWidget *ui;
     ClientManager* _client;
+    QDir _dir;
 };
 
 #endif // CLIENTCHATWIDGET_H

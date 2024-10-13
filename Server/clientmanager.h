@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QDir>
 
 class ClientManager : public QObject
 {
@@ -22,6 +23,11 @@ public:
 
     void SetupClient();
     QString Name() const;
+
+    void sendInitSendingFile(QString fileName);
+    void sendAcceptFile();
+    void sendRejectFile();
+
 signals:
     void Connected();
     void Disconnected();
@@ -30,6 +36,9 @@ signals:
     void IsTyping();
     void NameChanged(QString name);
     void StatusChanged(ChatProtocol::Status status);
+    void RejectReceivingFile();
+    void InitReceivingFile(QString clientName, QString fileName, qint64 fileSize);
+    void FileSaved(QString path);
 
 private slots:
     void ReadyRead();
@@ -39,6 +48,11 @@ private:
     QHostAddress _ip;
     ushort _port;
     ChatProtocol _protocol;
+    QString _tempFileName;
+
+private:
+    void SendFile();
+    void SaveFile();
 
 };
 
