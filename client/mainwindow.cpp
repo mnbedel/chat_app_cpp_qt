@@ -9,6 +9,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->centralwidget->setEnabled(false);
+
+    SetupClient();
 }
 
 MainWindow::~MainWindow()
@@ -17,7 +19,7 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::on_actionConnect_triggered()
+void MainWindow::SetupClient()
 {
     _client = new ClientManager();
 
@@ -32,6 +34,14 @@ void MainWindow::on_actionConnect_triggered()
     QObject::connect(_client, &ClientManager::InitReceivingFile, this, &MainWindow::onInitReceivingFile);
     QObject::connect(_client, &ClientManager::RejectReceivingFile, this, &MainWindow::onRejectReceivingFile);
     QObject::connect(ui->lineMessage, &QLineEdit::textChanged, _client, &ClientManager::SendIsTyping);
+    QObject::connect(_client, &ClientManager::ConnectionACK, this, &MainWindow::onConnectionACK);
+    QObject::connect(_client, &ClientManager::NewClientConnectedToServer, this, &MainWindow::onNewClientConnectedToServer);
+    QObject::connect(_client, &ClientManager::ClientNameChanged, this, &MainWindow::onClientNameChanged);
+    QObject::connect(_client, &ClientManager::ClientDisconnected, this, &MainWindow::onClientDisconnected);
+}
+
+void MainWindow::on_actionConnect_triggered()
+{
     _client->connectToServer();
 }
 
@@ -113,5 +123,25 @@ void MainWindow::onInitReceivingFile(QString clientName, QString fileName, qint6
     else {
         _client->sendRejectFile();
     }
+}
+
+void MainWindow::onConnectionACK(QString myName, QStringList clientsName)
+{
+
+}
+
+void MainWindow::onNewClientConnectedToServer(QString clientName)
+{
+
+}
+
+void MainWindow::onClientNameChanged(QString previousName, QString clientName)
+{
+
+}
+
+void MainWindow::onClientDisconnected(QString clientName)
+{
+
 }
 

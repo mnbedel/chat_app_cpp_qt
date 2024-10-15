@@ -15,6 +15,7 @@ public:
     explicit ClientManager(QTcpSocket* client, QObject *parent = nullptr);
 
     void connectToServer();
+    void disconnectFromHost();
     void SendMessage(QString message);
     void SendName(QString name);
     void SendStatus(ChatProtocol::Status status);
@@ -32,9 +33,9 @@ signals:
     void Connected();
     void Disconnected();
     //void DataReceived(QByteArray data);
-    void TextMessageReceived(const QString message);
+    void TextMessageReceived(const QString message, QString receiver);
     void IsTyping();
-    void NameChanged(QString name);
+    void NameChanged(QString previousName, QString name);
     void StatusChanged(ChatProtocol::Status status);
     void RejectReceivingFile();
     void InitReceivingFile(QString clientName, QString fileName, qint64 fileSize);
@@ -42,6 +43,7 @@ signals:
 
 private slots:
     void ReadyRead();
+
 
 private:
     QTcpSocket* _socket;

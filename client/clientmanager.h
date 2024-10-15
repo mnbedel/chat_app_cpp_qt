@@ -12,7 +12,7 @@ class ClientManager : public QObject
 public:
     explicit ClientManager(QHostAddress ip = QHostAddress::LocalHost, ushort port = 1972, QObject *parent = nullptr);
     void connectToServer();
-    void SendMessage(QString message);
+    void SendMessage(QString message, QString receiver);
     void SendName(QString name);
     void SendStatus(ChatProtocol::Status status);
 
@@ -32,6 +32,10 @@ signals:
     void StatusChanged(ChatProtocol::Status status);
     void RejectReceivingFile();
     void InitReceivingFile(QString clientName, QString fileName, qint64 fileSize);
+    void ConnectionACK(QString myName, QStringList clientsName);
+    void NewClientConnectedToServer(QString clientName);
+    void ClientNameChanged(QString previousName, QString clientName);
+    void ClientDisconnected(QString clientName);
 
 private slots:
     void ReadyRead();

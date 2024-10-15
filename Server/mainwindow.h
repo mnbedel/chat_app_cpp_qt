@@ -20,8 +20,10 @@ public:
 private slots:
     void NewClientConnected(QTcpSocket* client);
     void ClientDisconnected(QTcpSocket* client);
-    void SetClientName(QString name);
+    void SetClientName(QString previousName, QString name);
     void SetClientStatus(ChatProtocol::Status status);
+
+    void on_tabChats_tabCloseRequested(int index);
 
 private:
     Ui::MainWindow *ui;

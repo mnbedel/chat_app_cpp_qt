@@ -18,9 +18,14 @@ void ClientManager::connectToServer()
     _socket->connectToHost(_ip, _port);
 }
 
+void ClientManager::disconnectFromHost()
+{
+    _socket->disconnectFromHost();
+}
+
 void ClientManager::SendMessage(QString message)
 {
-    _socket->write(_protocol.textMessage(message));
+    _socket->write(_protocol.textMessage(message, Name()));
 }
 
 void ClientManager::SendName(QString name)
@@ -45,36 +50,55 @@ void ClientManager::ReadyRead()
 
     switch(_protocol.type()) {
     case ChatProtocol::MessageType::Text:
-        emit TextMessageReceived(_protocol.message());
+    {
+        emit TextMessageReceived(_protocol.message(), _protocol.receiver());
         break;
+    }
 
     case ChatProtocol::MessageType::SetName:
-        emit NameChanged(_protocol.name());
+    {
+        QString previousName = _socket->property("clientName").toString();
+        _socket->setProperty("clientName", Name());
+        emit NameChanged(previousName, Name());
         break;
+    }
 
     case ChatProtocol::MessageType::SetStatus:
+    {
         emit StatusChanged(_protocol.status());
         break;
+    }
 
     case ChatProtocol::MessageType::IsTyping:
+    {
         emit IsTyping();
         break;
+    }
 
     case ChatProtocol::MessageType::InitSendingFile:
+    {
         emit InitReceivingFile(_protocol.name(), _protocol.fileName(), _protocol.fileSize());
         break;
+    }
 
     case ChatProtocol::MessageType::AcceptSendingFile:
+    {
         emit SendFile();
         break;
+    }
 
     case ChatProtocol::MessageType::RejectSendingFile:
+    {
         emit RejectReceivingFile();
         break;
+    }
 
     case ChatProtocol::MessageType::SendFile:
+    {
         emit SaveFile();
         break;
+    }
+
     default:
         break;
     }

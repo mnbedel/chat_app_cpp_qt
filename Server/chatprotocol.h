@@ -17,7 +17,11 @@ public:
         InitSendingFile,
         AcceptSendingFile,
         RejectSendingFile,
-        SendFile
+        SendFile,
+        ClientName,
+        ConnectionACK,
+        NewClient,
+        ClientDisconnected
     };
 
     enum class Status{
@@ -29,7 +33,7 @@ public:
 
     ChatProtocol();
 
-    QByteArray textMessage(QString message);
+    QByteArray textMessage(QString message, QString receiver);
     QByteArray isTypingMessage();
     QByteArray setNameMessage(QString name);
     QByteArray setStatusMessage(Status status);
@@ -37,6 +41,11 @@ public:
     QByteArray setAcceptFileMessage();
     QByteArray setRejectFileMessage();
     QByteArray setFileMessage(QString fileName);
+
+    QByteArray setClientNameMessage(QString previousName, QString currName);
+    QByteArray setconnectionACKMessage(QString clientName, QStringList otherClients);
+    QByteArray setNewClientMessage(QString clientName);
+    QByteArray setClientDisconnectedMessage(QString clientName);
 
     void loadData(QByteArray data);
 
@@ -54,6 +63,8 @@ public:
 
     const QByteArray &fileData() const;
 
+    const QString &receiver() const;
+
 private:
     QByteArray getData(MessageType type, QString data);
 
@@ -64,6 +75,7 @@ private:
     QString _fileName;
     qint64 _fileSize;
     QByteArray _fileData;
+    QString _receiver;
 };
 
 #endif // CHATPROTOCOL_H

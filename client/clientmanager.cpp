@@ -14,9 +14,9 @@ void ClientManager::connectToServer()
     _socket->connectToHost(_ip, _port);
 }
 
-void ClientManager::SendMessage(QString message)
+void ClientManager::SendMessage(QString message, QString receiver)
 {
-    _socket->write(_protocol.textMessage(message));
+    _socket->write(_protocol.textMessage(message, receiver));
 }
 
 void ClientManager::SendName(QString name)
@@ -83,6 +83,23 @@ void ClientManager::ReadyRead()
     case ChatProtocol::MessageType::RejectSendingFile:
         emit RejectReceivingFile();
         break;
+
+    case ChatProtocol::MessageType::ConnectionACK:
+        emit ConnectionACK(_protocol.myName(), _protocol.clientsName());
+        break;
+
+    case ChatProtocol::MessageType::NewClient:
+        emit NewClientConnectedToServer(_protocol.clientName());
+        break;
+
+    case ChatProtocol::MessageType::ClientDisconnected:
+        emit ClientDisconnected(_protocol.clientName());
+        break;
+
+    case ChatProtocol::MessageType::ClientName:
+        emit ClientNameChanged(_protocol.previousName(), _protocol.clientName());
+        break;
+
     default:
         break;
     }

@@ -32,8 +32,14 @@ private slots:
     void onRejectReceivingFile();
     void onInitReceivingFile(QString clientName, QString fileName, qint64 fileSize);
 
+    void onConnectionACK(QString myName, QStringList clientsName);
+    void onNewClientConnectedToServer(QString clientName);
+    void onClientNameChanged(QString previousName, QString clientName);
+    void onClientDisconnected(QString clientName);
+
 private:
     Ui::MainWindow *ui;
     ClientManager* _client;
+    void SetupClient();
 };
 #endif // MAINWINDOW_H

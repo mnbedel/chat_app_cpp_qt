@@ -9,9 +9,14 @@ ChatProtocol::ChatProtocol()
 
 }
 
-QByteArray ChatProtocol::textMessage(QString message)
+QByteArray ChatProtocol::textMessage(QString message, QString receiver)
 {
-    return getData(MessageType::Text, message);
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_6_0);
+    out << MessageType::Text << receiver << message;
+
+    return ba;
 }
 
 QByteArray ChatProtocol::isTypingMessage()
@@ -79,7 +84,7 @@ void ChatProtocol::loadData(QByteArray data)
 
     switch(_type) {
     case MessageType::Text:
-        in >> _message;
+        in >> _receiver >> _message;
         break;
 
     case MessageType::SetName:
@@ -98,6 +103,19 @@ void ChatProtocol::loadData(QByteArray data)
         in >> _fileName >> _fileSize >> _fileData;
         break;
 
+    case MessageType::ClientName:
+        in >> _fileName >> _previousName >> _clientName;
+        break;
+
+    case MessageType::ConnectionACK:
+        in >> _myName >> _clientsName;
+        break;
+
+    case MessageType::NewClient:
+    case MessageType::ClientDisconnected:
+        in >> _fileName >> _clientName;
+        break;
+
     default:
         break;
     }
@@ -113,6 +131,30 @@ QByteArray ChatProtocol::getData(MessageType type, QString data)
     return ba;
 }
 
+const QString &ChatProtocol::myName() const
+{
+    return _myName;
+}
+
+const QStringList &ChatProtocol::clientsName() const
+{
+    return _clientsName;
+}
+
+const QString &ChatProtocol::previousName() const
+{
+    return _previousName;
+}
+
+const QString &ChatProtocol::clientName() const
+{
+    return _clientName;
+}
+
+QString ChatProtocol::receiver() const
+{
+    return _receiver;
+}
 const QByteArray &ChatProtocol::fileData() const
 {
     return _fileData;
