@@ -63,7 +63,7 @@ void MainWindow::DataReceived(QString message)
 void MainWindow::on_buttonSend_clicked()
 {
     QString message = ui->lineMessage->text().trimmed();
-    _client->SendMessage(message);
+    _client->SendMessage(message, ui->comboDestination->currentText());
 
     ChatItemWidget* chatwidget = new ChatItemWidget(this);
     chatwidget->SetMessage(message, true);
@@ -127,21 +127,37 @@ void MainWindow::onInitReceivingFile(QString clientName, QString fileName, qint6
 
 void MainWindow::onConnectionACK(QString myName, QStringList clientsName)
 {
+    ui->comboDestination->clear();
+    clientsName.prepend("All");
+    clientsName.prepend("Server");
 
+    foreach (QString client, clientsName) {
+        ui->comboDestination->addItem(client);
+    }
+
+    setWindowTitle(myName);
 }
 
 void MainWindow::onNewClientConnectedToServer(QString clientName)
 {
-
+    ui->comboDestination->addItem(clientName);
 }
 
 void MainWindow::onClientNameChanged(QString previousName, QString clientName)
 {
-
+    for (int idx = 0; idx < ui->comboDestination->count(); idx++) {
+        if (ui->comboDestination->itemText(idx) == previousName) {
+            ui->comboDestination->setItemText(idx, clientName);
+        }
+    }
 }
 
 void MainWindow::onClientDisconnected(QString clientName)
 {
-
+    for (int idx = 0; idx < ui->comboDestination->count(); idx++) {
+        if (ui->comboDestination->itemText(idx) == clientName) {
+            ui->comboDestination->removeItem(idx);
+        }
+    }
 }
 
