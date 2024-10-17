@@ -11,12 +11,16 @@ ClientManager::ClientManager(QHostAddress ip, ushort port, QObject *parent)
 
 void ClientManager::connectToServer()
 {
-    _socket->connectToHost(_ip, _port);
+    if (_socket->state() != QTcpSocket::ConnectedState) {
+        _socket->connectToHost(_ip, _port);
+    }
 }
 
 void ClientManager::SendMessage(QString message, QString receiver)
 {
-    _socket->write(_protocol.textMessage(message, receiver));
+    if (message.trimmed().length() > 0) {
+        _socket->write(_protocol.textMessage(message, receiver));
+    }
 }
 
 void ClientManager::SendName(QString name)

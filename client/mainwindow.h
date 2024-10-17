@@ -37,6 +37,8 @@ private slots:
     void onClientNameChanged(QString previousName, QString clientName);
     void onClientDisconnected(QString clientName);
 
+    void on_lineMessage_textChanged(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
     ClientManager* _client;

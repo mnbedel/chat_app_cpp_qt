@@ -25,15 +25,18 @@ void MainWindow::SetupClient()
 
     QObject::connect(_client, &ClientManager::Connected, [this](){
         ui->centralwidget->setEnabled(true);
+        ui->actionConnect->setEnabled(false);
+        ui->buttonSend->setEnabled(false);
     });
     QObject::connect(_client, &ClientManager::Disconnected, [this](){
         ui->centralwidget->setEnabled(false);
+        ui->actionConnect->setEnabled(true);
     });
     QObject::connect(_client, &ClientManager::TextMessageReceived, this, &MainWindow::DataReceived);
     QObject::connect(_client, &ClientManager::IsTyping, this, &MainWindow::onTyping);
     QObject::connect(_client, &ClientManager::InitReceivingFile, this, &MainWindow::onInitReceivingFile);
     QObject::connect(_client, &ClientManager::RejectReceivingFile, this, &MainWindow::onRejectReceivingFile);
-    QObject::connect(ui->lineMessage, &QLineEdit::textChanged, _client, &ClientManager::SendIsTyping);
+    //QObject::connect(ui->lineMessage, &QLineEdit::textChanged, _client, &ClientManager::SendIsTyping);
     QObject::connect(_client, &ClientManager::ConnectionACK, this, &MainWindow::onConnectionACK);
     QObject::connect(_client, &ClientManager::NewClientConnectedToServer, this, &MainWindow::onNewClientConnectedToServer);
     QObject::connect(_client, &ClientManager::ClientNameChanged, this, &MainWindow::onClientNameChanged);
@@ -76,6 +79,7 @@ void MainWindow::on_buttonSend_clicked()
     ui->listMessages->setItemWidget(listitemwidget, chatwidget);
 
     ui->lineMessage->setText("");
+    ui->lineMessage->setFocus();
 }
 
 
@@ -159,5 +163,12 @@ void MainWindow::onClientDisconnected(QString clientName)
             ui->comboDestination->removeItem(idx);
         }
     }
+}
+
+
+void MainWindow::on_lineMessage_textChanged(const QString &arg1)
+{
+    ui->buttonSend->setEnabled(arg1.trimmed().length() > 0);
+    _client->SendIsTyping();
 }
 
